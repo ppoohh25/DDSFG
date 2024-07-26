@@ -37,7 +37,7 @@ module dds_top(
         .pll_clk(wpll_clk),
         .Resetn(wFg_resetn),
         .Fg_clk(wFg_clk),
-        .Dac_clk(wDac_clk)
+        .Dac_clk(clk_out)
     );
 
     ResetGen_Module resetgen (
@@ -69,8 +69,8 @@ module dds_top(
         .Resetn(wFg_resetn),
         .Enable(wEnable),
         .Ready(wReady),
-        .init1(wsine1x),
-        .init2(wcos2x),
+        .init1(/*32'd96878045*/wsine1x),
+        .init2(/*32'd1054193702*/wcos2x),
         .FreqChng(wFreq_Chng),
         .Mode(wMode),
         .out1(wOut1),
@@ -84,7 +84,7 @@ module dds_top(
         .Out2(wOut2),
         .Mode(wMode),
         .Enable(wEnable),
-        .InterpOut(wInterpOut)
+        .InterpOut(osc_out)
     );
 
     button button_rot (
@@ -109,13 +109,10 @@ module dds_top(
         .Fg_clk(wFg_clk),
         .Resetn(wFg_resetn),
         .address(waddress),
-        .out1(wOut1),
-        .out2(wOut2),
+        .out1(),
+        .out2(),
         .sine1x(wsine1x),
         .cos2x(wcos2x)
     );
-
-    assign clk_out = wDac_clk;
-    assign osc_out = wInterpOut;
 
 endmodule
