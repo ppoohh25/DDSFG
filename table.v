@@ -9,9 +9,14 @@ module Table_coef (
 );
 
   wire [47:0] coefficient;
-
+//--------------------- debug -----------------------------
+  // real cos2x_f;
+  // always @(*) begin
+  //   cos2x_f <= $itor(cos2x)/536870912;
+  // end
+  //---------------------------------------------------------
   // Instantiate the ROM module
-  romcoef_module romcoefmod(
+  romcoef_module romcoef_module(
     .dout(coefficient),
     .clk(Fg_clk),
     .oce(1'b0),         // Output clock enable is set to 0
@@ -23,6 +28,8 @@ module Table_coef (
   // Assign outputs with bit manipulation
   assign sine1x = {4'b0000, coefficient[47:24], 4'b0000};
   assign cos2x = {6'b001111, coefficient[23:0], 2'b00};
+
+  
 
 endmodule
 

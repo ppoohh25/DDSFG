@@ -18,7 +18,20 @@ module Oscillator (
   reg do_update;
   reg zcross;
   reg dir;
+//---------------------------- debug----------------------------------------
+  // real  out1_f;
+  // real  out2_f; 
+  // real a_f;
+  // real c_f;
 
+  // always@(*) begin
+  //     out1_f <= $itor(out1)/536870912;
+  //     out2_f <= $itor(out2)/536870912; 
+  //     a_f <= $itor(a)/536870912;
+  //     c_f <= $itor(c[60:29])/536870912;
+  //     //if(init2 == 32'd1072330912) a <= 32'd1039479748;
+  // end
+//----------------------------------------------------------------------------
   // Output register logic
   always @(posedge Fg_clk or negedge Resetn) begin
     if (~Resetn) begin
