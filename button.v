@@ -4,32 +4,49 @@ module button (
   input Resetn,
   output reg IntButton
 );
-  reg [2:0] sync;
+  reg Ds, Dout, Dout1;
   reg [24:0] count;
 
   always @(posedge Fg_clk or negedge Resetn) begin
     if (~Resetn) begin
-      sync <= 3'b000;
-      count <= 0;
-      IntButton <= 0;
+        Ds <= 0;
+        Dout <= 0;
+        Dout1 <= 0;
     end else begin
-      // Synchronize Ext_button
-      sync <= {sync[1:0], Ext_button};
-
-      // Manage count for debouncing
-      if (count != 0) begin
-        count <= count + 1;
-        if (count == 2400) // Simulation: 2400, Real: 24000000
-          count <= 0;
-      end
-
-      // Detect falling edge of Ext_button
-      if (sync[2:1] == 2'b10 && count == 0) begin
-        IntButton <= 1;
-        count <= 1;
-      end else begin
-        IntButton <= 0;
-      end
+        Ds <= Ext_button;
+        Dout <= Ds;
+        Dout1 <= Dout;
     end
-  end
+end
+
+always @(posedge Fg_clk or negedge Resetn) begin
+    if (~Resetn) begin
+        count <= 0;
+    end 
+    else if(IntButton == 1)begin
+      count <= 1;
+    end
+    else begin
+        if (count > 0 && count < 24000000) begin //if sim 24000000 --> 2400
+            count <= count + 25'd1;
+        end else if(count >= 24000000) begin
+            count <= 0;
+        end
+    end
+end
+
+always @(posedge Fg_clk or negedge Resetn) begin
+    if (~Resetn) begin
+        IntButton <= 0;
+    end else begin
+        if (Dout1 == 1 && Dout == 0 && count == 0) begin
+            IntButton <= 1;
+        end else begin
+            IntButton <= 0;
+        end
+    end
+end
+
+
 endmodule
+
