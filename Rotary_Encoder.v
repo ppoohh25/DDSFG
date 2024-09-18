@@ -14,7 +14,8 @@ module Rotary (
   reg [7:0] step;
   reg [2:0] Aff, Bff;
   reg A_fall, B_fall;
-  reg [1:0] state;
+  reg A_rise, B_rise;
+  reg [2:0] state;
   reg [21:0] count_change;
   reg change;
   
@@ -39,6 +40,17 @@ module Rotary (
     end else begin
       A_fall <= ~Aff[1] & Aff[2];
       B_fall <= ~Bff[1] & Bff[2];
+    end
+  end
+// Detect A_rise and B_rise
+  always @(posedge Fg_clk or negedge Resetn) begin
+    if (~Resetn) begin
+      A_rise <= 0;
+      B_rise <= 0;
+    end
+    else begin
+      A_rise <= Aff[1] & ~Aff[2];
+      B_rise <= Bff[1] & ~Bff[2];
     end
   end
 
@@ -75,6 +87,49 @@ always @(posedge Fg_clk or negedge Resetn) begin
 
 // ---- No simulation checked yet, please run simulation before testing in the real chip !!!!!!! 
 
+// always @(posedge Fg_clk or negedge Resetn) begin
+//     if (~Resetn) begin
+//       state    <= 0;
+//       count    <= 0;
+//       cool_cnt <= 0;
+//     end 
+//     else begin
+//       if ((Mode==4) & (count<800)) count <= 800; // If Mode changes to 4 and old count is <800, set to 800 immediately !!!
+//       else begin
+//          case (state)
+//            0: begin  // Idle
+//                 if      (B_fall) state <= 1; // Go to increase state
+//                 else if (A_fall) state <= 2; // Go to decrease state         
+//               end
+//            1: begin  // increase state
+//                  if (A_fall) begin
+//                      state <= 3; // cool down stage
+//                      count <= ($unsigned(count+step)>1800)  ? 1800      : // No over 1800 all mode 
+//                                                               count+step; // 
+//                  end
+//               end  
+//            2: begin  // decrease state
+//                  if (B_fall) begin
+//                      state <= 3; // cool down stage
+//                      count <= ((Mode==4) & (count<=800))         ?         800 : // No less than 800 in mode4
+//                               ($unsigned(count)<=$unsigned(step))?           0 : // if count<=step, set to 0 to avoid overflow
+//                                                                     count-step ;
+//                  end
+//               end 
+//            3: begin  // cool down stage to avoid glitch
+//                  if ((cool_cnt>=256) & (Aff[2]==1) & (Bff[2]==1)) begin // cool down for 256 clock (can be adjusted if not smooth)  
+//                      cool_cnt <= 0;                                     // Also wait until A and B are 1 (idle stage)
+//                      state    <= 0; // back to idle
+//                  end
+//                  else begin 
+//                      cool_cnt <= (cool_cnt<256) ? cool_cnt+1 : cool_cnt;
+//                  end
+//               end 
+//          endcase
+//       end
+//     end
+// end
+
 always @(posedge Fg_clk or negedge Resetn) begin
     if (~Resetn) begin
       state    <= 0;
@@ -87,32 +142,52 @@ always @(posedge Fg_clk or negedge Resetn) begin
          case (state)
            0: begin  // Idle
                 if      (B_fall) state <= 1; // Go to increase state
-                else if (A_fall) state <= 2; // Go to decrease state         
+                else if (A_fall) state <= 4; // Go to decrease state         
               end
            1: begin  // increase state
                  if (A_fall) begin
-                     state <= 3; // cool down stage
-                     count <= ($unsigned(count+step)>1800)  ? 1800      : // No over 1800 all mode 
-                                                              count+step; // 
+                     state <= 2; 
                  end
               end  
-           2: begin  // decrease state
-                 if (B_fall) begin
-                     state <= 3; // cool down stage
-                     count <= ((Mode==4) & (count<=800))         ?         800 : // No less than 800 in mode4
-                              ($unsigned(count)<=$unsigned(step))?           0 : // if count<=step, set to 0 to avoid overflow
-                                                                    count-step ;
+           2: begin
+                 if (B_rise) begin
+                     state <= 3;
                  end
               end 
-           3: begin  // cool down stage to avoid glitch
-                 if ((cool_cnt>=256) & (Aff[2]==1) & (Bff[2]==1)) begin // cool down for 256 clock (can be adjusted if not smooth)  
+           3: begin
+                 if (A_rise) begin
+                  state <= 7;
+                  count <= ($unsigned(count+step)>1800)  ? 1800      : // No over 1800 all mode 
+                                                              count+step; // 
+                 end
+              end
+            4: begin
+                if (B_fall) begin
+                    state <= 5;
+                end
+            end
+            5: begin
+                if (A_rise) begin
+                    state <= 6;
+                end
+            end
+            6: begin
+                if (B_rise) begin
+                    state <= 7;
+                    count <= ((Mode==4) & (count<=800))         ?         800 : // No less than 800 in mode4
+                              ($unsigned(count)<=$unsigned(step))?           0 : // if count<=step, set to 0 to avoid overflow
+                                                                    count-step ;                                                              
+                end
+            end
+            7: begin
+              if ((cool_cnt>=256) & (Aff[2]==1) & (Bff[2]==1)) begin // cool down for 256 clock (can be adjusted if not smooth)  
                      cool_cnt <= 0;                                     // Also wait until A and B are 1 (idle stage)
                      state    <= 0; // back to idle
                  end
                  else begin 
                      cool_cnt <= (cool_cnt<256) ? cool_cnt+1 : cool_cnt;
                  end
-              end 
+            end
          endcase
       end
     end
@@ -136,7 +211,7 @@ end
       count_change <= 0;
       change <= 0;
     end else begin
-      if (count_change >= 2400000) begin //If sim 2400000 --> 2400
+      if (count_change >= 2400) begin //If sim 2400000 --> 2400
         count_change <= 0;
         change <= 1;
       end else begin
