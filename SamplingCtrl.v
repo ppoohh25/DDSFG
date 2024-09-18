@@ -13,18 +13,18 @@ module SamplingCtrl (
 
   
 
- // Ready signal logic
+//  Ready signal logic
   always @(posedge Fg_clk or negedge Resetn) begin
     if (~Resetn) begin
       rcount <= 0;
     end else begin
       if (rcount < 80) begin
-        rcount <= rcount + 1;       
+        rcount <= rcount + 8'd1;       
       end
     end
   end
 
-  // Ready signal logic
+//   Ready signal logic
   always @(posedge Fg_clk or negedge Resetn) begin
     if (~Resetn) begin
       Ready <= 0;     
@@ -37,7 +37,7 @@ module SamplingCtrl (
     end
   end
 
-  // Mode transition logic
+//   Mode transition logic
   always @(posedge Fg_clk or negedge Resetn) begin
     if (~Resetn) begin
       Mode <= 0;
@@ -45,12 +45,12 @@ module SamplingCtrl (
       if (Mode == 4) begin
         Mode <= 0;
       end else begin
-        Mode <= Mode + 1;
+        Mode <= Mode + 3'd1;
       end
     end
   end
 
-  // Pulse generation logic
+//   Pulse generation logic
   always @(posedge Fg_clk or negedge Resetn) begin
     if (~Resetn) begin
       pulse_in <= 0;
@@ -62,7 +62,7 @@ module SamplingCtrl (
     end
   end
 
-  // Mode-based count change logic (Combinational)
+//   Mode-based count change logic (Combinational)
   always @(*) begin
     case (Mode)
       0: i = 0;
@@ -74,8 +74,8 @@ module SamplingCtrl (
     endcase
   end
 
-  // Enable signal logic
-  always @(posedge Fg_clk or negedge Resetn) begin
+//   Enable signal logic
+   always @(posedge Fg_clk or negedge Resetn) begin
     if (~Resetn) begin
       Enable <= 0;
       count <= 0;
@@ -84,7 +84,7 @@ module SamplingCtrl (
         Enable <= 1;
       end else begin
         if (count < i) begin
-          count <= count + 1;
+          count <= count + 15'd1;
           Enable <= 0;
         end else begin
           count <= 0;
