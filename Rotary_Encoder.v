@@ -136,7 +136,7 @@ end
       count_change <= 0;
       change <= 0;
     end else begin
-      if (count_change >= 2400) begin //If sim 2400000 --> 2400
+      if (count_change >= 2400000) begin //If sim 2400000 --> 2400
         count_change <= 0;
         change <= 1;
       end else begin
