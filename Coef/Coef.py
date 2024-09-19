@@ -23,5 +23,3 @@ for i in range(0,2048):
     else :
         f.write("%06x%06x \n" % (0, 0))
         n = n + 0.5
-
-    x = x+1    
