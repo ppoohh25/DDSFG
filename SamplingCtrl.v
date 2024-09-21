@@ -66,10 +66,10 @@ module SamplingCtrl (
   always @(*) begin
     case (Mode)
       0: i = 0;
-      1: i = 10;
-      2: i = 100;
-      3: i = 1000;
-      4: i = 10000;
+      1: i = 9;
+      2: i = 99;
+      3: i = 999;
+      4: i = 9999;
       default: i = 0;
     endcase
   end

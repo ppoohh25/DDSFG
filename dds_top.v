@@ -5,6 +5,7 @@ module dds_top(
     input rot_A,
     input rot_B,
     input rot_C,
+    output [4:0] led_Mode,
     output [11:0] osc_out,
     output clk_out
 );
@@ -111,5 +112,11 @@ module dds_top(
         .out2(0),
         .sine1x(wsine1x),
         .cos2x(wcos2x)
+    );
+    Led led(
+        .Fg_clk(wFg_clk),
+        .Resetn(wFg_resetn),
+        .Mode(wMode),
+        .Led_Mode(led_Mode)
     );
 endmodule
