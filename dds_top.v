@@ -2,9 +2,9 @@ module dds_top(
     input Ext_clk_27,
     input Ext_resetn,
     input Ext_button_sam,
-    input Rot_A,
-    input Rot_B,
-    input Rot_C,
+    input rot_A,
+    input rot_B,
+    input rot_C,
     output [11:0] osc_out,
     output clk_out
 );
@@ -20,13 +20,19 @@ module dds_top(
     wire [31:0] wOut1, wOut2;
     wire [10:0] waddress;
     wire wIntButton_rot;
-    wire [11:0] wInterpOut;
     wire wFreq_Chng ;
     wire [31:0] wsine1x;
     wire [31:0] wcos2x;
-    wire wDac_clk;
 
-    pll_top pll (
+    ResetGen_Module resetgen (
+        .ExtRESETn(Ext_resetn),
+        .CLK(Ext_clk_27),
+        .PllRESETn(wpll_reset),
+        .FgRESETn(wFg_resetn),
+        .PllLocked(wpll_lock)
+    );
+
+    pll_module pll (
         .clkin (Ext_clk_27),
         .reset (~wpll_reset),
         .clkout (wpll_clk),
@@ -38,14 +44,6 @@ module dds_top(
         .Resetn(wFg_resetn),
         .Fg_clk(wFg_clk),
         .Dac_clk(clk_out)
-    );
-
-    ResetGen_Module resetgen (
-        .ExtRESETn(Ext_resetn),
-        .CLK(Ext_clk_27),
-        .PllRESETn(wpll_reset),
-        .FgRESETn(wFg_resetn),
-        .PllLocked(wpll_lock)
     );
 
     button button_sam (
@@ -69,8 +67,8 @@ module dds_top(
         .Resetn(wFg_resetn),
         .Enable(wEnable),
         .Ready(wReady),
-        .init1(/*32'd96878045*/wsine1x),
-        .init2(/*32'd1054193702*/wcos2x),
+        .init1(wsine1x),
+        .init2(wcos2x),
         .FreqChng(wFreq_Chng),
         .Mode(wMode),
         .out1(wOut1),
@@ -88,7 +86,7 @@ module dds_top(
     );
 
     button button_rot (
-        .Ext_button(Rot_C),
+        .Ext_button(rot_C),
         .IntButton(wIntButton_rot),
         .Fg_clk(wFg_clk),
         .Resetn(wFg_resetn)
@@ -96,8 +94,8 @@ module dds_top(
 
     Rotary rot (
         .Fg_clk(wFg_clk),
-        .Rot_A(Rot_A),
-        .Rot_B(Rot_B),
+        .Rot_A(rot_A),
+        .Rot_B(rot_B),
         .Rot_C(wIntButton_rot),
         .Mode(wMode),
         .address(waddress),
@@ -109,10 +107,9 @@ module dds_top(
         .Fg_clk(wFg_clk),
         .Resetn(wFg_resetn),
         .address(waddress),
-        .out1(),
-        .out2(),
+        .out1(0),
+        .out2(0),
         .sine1x(wsine1x),
         .cos2x(wcos2x)
     );
-
 endmodule
