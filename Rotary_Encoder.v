@@ -42,159 +42,50 @@ module Rotary (
       B_fall <= ~Bff[1] & Bff[2];
     end
   end
-// Detect A_rise and B_rise
-  always @(posedge Fg_clk or negedge Resetn) begin
-    if (~Resetn) begin
-      A_rise <= 0;
-      B_rise <= 0;
-    end
-    else begin
-      A_rise <= Aff[1] & ~Aff[2];
-      B_rise <= Bff[1] & ~Bff[2];
-    end
-  end
+   always @(posedge Fg_clk or negedge Resetn) begin
+     if (~Resetn) begin
+       state    <= 0;
+       count    <= 0;
+       cool_cnt <= 0;
+     end 
+     else begin
+       if ((Mode==4) & (count<800)) count <= 800; // If Mode changes to 4 and old count is <800, set to 800 immediately !!!
+       else begin
+          case (state)
+            0: begin  // Idle
+                 if      (B_fall) state <= 1; // Go to increase state
+                 else if (A_fall) state <= 2; // Go to decrease state         
+               end
+            1: begin  // increase state
+                  if (A_fall) begin
+                      state <= 3; // cool down stage
+                      count <= ($unsigned(count+step)>1799)  ? 11'd1799      : // No over 1800 all mode 
+                                                               count+step; // 
+                  end
+               end  
+            2: begin  // decrease state
+                  if (B_fall) begin
+                      state <= 3; // cool down stage
+                      count <= ((Mode==4) & (count<=800))         ?         11'd800 : // No less than 800 in mode4
+                               ($unsigned(count)<=$unsigned(step))?           11'd0 : // if count<=step, set to 0 to avoid overflow
+                                                                     count-step ;
+                  end
+               end 
+            3: begin  // cool down stage to avoid glitch
+                  if ((cool_cnt>=256) & (Aff[2]==1) & (Bff[2]==1)) begin // cool down for 256 clock (can be adjusted if not smooth)  
+                      cool_cnt <= 0;                                     // Also wait until A and B are 1 (idle stage)
+                      state    <= 0; // back to idle
+                  end
+                  else begin 
+                      cool_cnt <= (cool_cnt<256) ? cool_cnt+11'd1 : cool_cnt;
+                  end
+               end 
+          endcase
+       end
+     end
+ end
 
-/* // Your state machine is confusing, see my state machine
-
-always @(posedge Fg_clk or negedge Resetn) begin
-    if (~Resetn) begin
-      state <= 0;
-      count <= 0;
-    end else begin
-      if (Mode == 4 && count < 800) count <= 800;    // < -------- 
-      if (count > 1800) count <= 1800;               // < -------- no else if !!!!!! make synthesis confuse
-      if (Mode != 4 && count < 0) count <= 0;        // < -------- no else if !!!!!! make synthesis confuse
-      else begin 
-      case (state)
-        0: begin
-          if (B_fall) begin
-            state <= 1;
-            count <= (count + step > 11'd1800) ? 11'd1800 : count + step; // <--- If mode4 it will be over 1800 for 1 clock 
-          end else if (A_fall) begin
-            state <= 2;
-            if (Mode == 4) count <= (count - step < 11'd800) ? 11'd800 : count - step; // <--- If mode4 it will be under 800 for 1 clock
-            else count <= (count < step) ? 11'd0 : count - step;
-          end
-        end
-        1: if (A_fall) state <= 0;
-        2: if (B_fall) state <= 0;
-        default : state <= 0;
-      endcase
-      end
-    end
-  end
-*/
-
-// ---- No simulation checked yet, please run simulation before testing in the real chip !!!!!!! 
-
-// always @(posedge Fg_clk or negedge Resetn) begin
-//     if (~Resetn) begin
-//       state    <= 0;
-//       count    <= 0;
-//       cool_cnt <= 0;
-//     end 
-//     else begin
-//       if ((Mode==4) & (count<800)) count <= 800; // If Mode changes to 4 and old count is <800, set to 800 immediately !!!
-//       else begin
-//          case (state)
-//            0: begin  // Idle
-//                 if      (B_fall) state <= 1; // Go to increase state
-//                 else if (A_fall) state <= 2; // Go to decrease state         
-//               end
-//            1: begin  // increase state
-//                  if (A_fall) begin
-//                      state <= 3; // cool down stage
-//                      count <= ($unsigned(count+step)>1800)  ? 1800      : // No over 1800 all mode 
-//                                                               count+step; // 
-//                  end
-//               end  
-//            2: begin  // decrease state
-//                  if (B_fall) begin
-//                      state <= 3; // cool down stage
-//                      count <= ((Mode==4) & (count<=800))         ?         800 : // No less than 800 in mode4
-//                               ($unsigned(count)<=$unsigned(step))?           0 : // if count<=step, set to 0 to avoid overflow
-//                                                                     count-step ;
-//                  end
-//               end 
-//            3: begin  // cool down stage to avoid glitch
-//                  if ((cool_cnt>=256) & (Aff[2]==1) & (Bff[2]==1)) begin // cool down for 256 clock (can be adjusted if not smooth)  
-//                      cool_cnt <= 0;                                     // Also wait until A and B are 1 (idle stage)
-//                      state    <= 0; // back to idle
-//                  end
-//                  else begin 
-//                      cool_cnt <= (cool_cnt<256) ? cool_cnt+1 : cool_cnt;
-//                  end
-//               end 
-//          endcase
-//       end
-//     end
-// end
-
-always @(posedge Fg_clk or negedge Resetn) begin
-    if (~Resetn) begin
-      state    <= 0;
-      count    <= 0;
-      cool_cnt <= 0;
-    end 
-    else begin
-      if ((Mode==4) & (count<800)) count <= 800; // If Mode changes to 4 and old count is <800, set to 800 immediately !!!
-      else begin
-         case (state)
-           0: begin  // Idle
-                if      (B_fall) state <= 1; // Go to increase state
-                else if (A_fall) state <= 4; // Go to decrease state         
-              end
-           1: begin  // increase state
-                 if (A_fall) begin
-                     state <= 2; 
-                 end
-              end  
-           2: begin
-                 if (B_rise) begin
-                     state <= 3;
-                 end
-              end 
-           3: begin
-                 if (A_rise) begin
-                  state <= 7;
-                  count <= ($unsigned(count+step)>1800)  ? 1800      : // No over 1800 all mode 
-                                                              count+step; // 
-                 end
-              end
-            4: begin
-                if (B_fall) begin
-                    state <= 5;
-                end
-            end
-            5: begin
-                if (A_rise) begin
-                    state <= 6;
-                end
-            end
-            6: begin
-                if (B_rise) begin
-                    state <= 7;
-                    count <= ((Mode==4) & (count<=800))         ?         800 : // No less than 800 in mode4
-                              ($unsigned(count)<=$unsigned(step))?           0 : // if count<=step, set to 0 to avoid overflow
-                                                                    count-step ;                                                              
-                end
-            end
-            7: begin
-              if ((cool_cnt>=256) & (Aff[2]==1) & (Bff[2]==1)) begin // cool down for 256 clock (can be adjusted if not smooth)  
-                     cool_cnt <= 0;                                     // Also wait until A and B are 1 (idle stage)
-                     state    <= 0; // back to idle
-                 end
-                 else begin 
-                     cool_cnt <= (cool_cnt<256) ? cool_cnt+1 : cool_cnt;
-                 end
-            end
-         endcase
-      end
-    end
-end
-
-//   Step Management
-  always @(posedge Fg_clk or negedge Resetn) begin
+   always @(posedge Fg_clk or negedge Resetn) begin
     if (~Resetn) step <= 1;
     else if (Rot_C == 1) begin
       case (step)

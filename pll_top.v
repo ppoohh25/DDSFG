@@ -5,9 +5,9 @@
 //Part Number: GW1NR-LV9QN88PC6/I5
 //Device: GW1NR-9
 //Device Version: C
-//Created Time: Fri Jul 12 10:16:17 2024
+//Created Time: Fri Aug  2 10:52:47 2024
 
-module pll_top (clkout, lock, reset, clkin);
+module pll_module (clkout, lock, reset, clkin);
 
 output clkout;
 output lock;
@@ -62,5 +62,4 @@ defparam rpll_inst.CLKOUTD_SRC = "CLKOUT";
 defparam rpll_inst.CLKOUTD3_SRC = "CLKOUT";
 defparam rpll_inst.DEVICE = "GW1NR-9C";
 
-endmodule //pll_top
-
+endmodule //pll_module

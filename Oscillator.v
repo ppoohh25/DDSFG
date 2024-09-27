@@ -35,7 +35,7 @@ module Oscillator (
     if (~Resetn) begin
       out2 <= 0;
     end else if (Ready || do_update) begin
-      out2 <= 32'h000000AB;
+      out2 <= 32'h000000AB; //default 0
     end else if (Enable) begin
       out2 <= out1;
     end

@@ -18,6 +18,7 @@ module button (
         Dout1 <= Dout;
     end
 end
+
 always @(posedge Fg_clk or negedge Resetn) begin
     if (~Resetn) begin
         count <= 0;
@@ -33,6 +34,7 @@ always @(posedge Fg_clk or negedge Resetn) begin
         end
     end
 end
+
 always @(posedge Fg_clk or negedge Resetn) begin
     if (~Resetn) begin
         IntButton <= 0;
@@ -45,5 +47,5 @@ always @(posedge Fg_clk or negedge Resetn) begin
     end
 end
 
-
 endmodule
+
