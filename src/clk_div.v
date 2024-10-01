@@ -17,3 +17,12 @@ module clk_div(
         end else Dac_clk <= ~Dac_clk;
     end
 endmodule
+
+/*
+Module name : clk_div
+How it work : 
+    This module divides the input clock (pll_clk) to generate two separate clock signals: Fg_clk and Dac_clk. 
+    The Fg_clk toggles on the positive edge of pll_clk, effectively dividing its frequency by 2. 
+    Similarly, Dac_clk toggles on the negative edge of pll_clk, also dividing the frequency by 2. 
+    Both clock signals are reset to 0 when the Resetn signal is low.
+*/

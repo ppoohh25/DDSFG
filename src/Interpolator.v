@@ -65,3 +65,12 @@ module Interpolator (
   end
 
 endmodule
+
+/*
+Module name : Interpolator
+How it works: 
+  The Interpolator module computes the difference between two 32-bit input signals (`Out1` and `Out2`), scales it based on the selected mode,
+  and generates a 12-bit output (`InterpOut`). The interpolation process involves calculating a delta and adding it to `Out2` over time, 
+  simulating a gradual transition between `Out1` and `Out2`. The `Enable` signal controls when the interpolation happens, and the result
+  is updated on each clock cycle if enabled.
+*/

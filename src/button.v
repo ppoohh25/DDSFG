@@ -49,3 +49,11 @@ end
 
 endmodule
 
+/*
+Module name : button
+How it work : 
+    This module debounces an external button (Ext_button) to produce a clean internal signal (IntButton). 
+    It uses a 3-stage flip-flop chain to synchronize the external button input with the system clock (Fg_clk) and remove any bouncing. 
+    A 25-bit counter is used to create a delay to prevent multiple triggers during bouncing. 
+    The internal button signal (IntButton) is a single pulse generated on the falling edge of the debounced signal, ensuring the button press is registered cleanly.
+*/

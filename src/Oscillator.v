@@ -106,3 +106,13 @@ module Oscillator (
     end
   end
 endmodule
+
+/*
+Module name : Oscillator
+How it works: 
+  The Oscillator module generates two outputs, `out1` and `out2`, based on input signals and internal calculations. It uses 
+  inputs such as frequency change signals (`FreqChng`), enable signals (`Enable`), and a mode selector (`Mode`) to control
+  the behavior of the oscillator. The output is updated based on zero-crossing detection logic, and coefficients `init1`
+  and `init2` are used to initialize certain internal variables. The module supports different modes and detects when the 
+  output crosses zero to trigger updates.
+*/

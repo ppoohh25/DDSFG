@@ -94,3 +94,14 @@ module SamplingCtrl (
     end
   end
 endmodule
+
+/*
+Module name : SamplingCtrl
+How it work : 
+    This module controls sampling behavior using several inputs and outputs. 
+    The Ready signal is generated based on a counter (rcount), which counts up to 80 clock cycles before setting Ready to 1. 
+    The Mode signal cycles through different modes (0 to 4) when a pulse from IntBtn is detected and the Enable signal is high. 
+    Each mode sets a specific count limit (i) that determines the delay before the Enable signal is re-activated. 
+    This ensures timed intervals between different operational modes. 
+    A pulse (pulse_in) is generated from IntBtn, and the Enable signal is controlled based on the mode and counting logic.
+*/
